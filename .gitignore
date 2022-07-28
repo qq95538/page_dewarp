@@ -2,3 +2,5 @@
 *~
 nogit/*
 *.pyc
+*.tif
+example_input/0040.jpg
