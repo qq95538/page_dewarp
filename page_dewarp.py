@@ -23,7 +23,7 @@ import scipy.optimize
 PAGE_MARGIN_X = 50       # reduced px to ignore near L/R edge
 PAGE_MARGIN_Y = 20       # reduced px to ignore near T/B edge
 
-OUTPUT_ZOOM = 1.0        # how much to zoom output relative to *original* image
+OUTPUT_ZOOM = 1        # how much to zoom output relative to *original* image
 OUTPUT_DPI = 300         # just affects stated DPI of PNG, not appearance
 REMAP_DECIMATE = 16      # downscaling factor for remapping image
 
@@ -32,7 +32,7 @@ ADAPTIVE_WINSZ = 55      # window size for adaptive threshold in reduced px
 TEXT_MIN_WIDTH = 15      # min reduced px width of detected text contour
 TEXT_MIN_HEIGHT = 2      # min reduced px height of detected text contour
 TEXT_MIN_ASPECT = 1.5    # filter out text contours below this w/h ratio
-TEXT_MAX_THICKNESS = 10  # max reduced px thickness of detected text contour
+TEXT_MAX_THICKNESS = 15  # max reduced px thickness of detected text contour
 
 EDGE_MAX_OVERLAP = 1.0   # max reduced px horiz. overlap of contours in span
 EDGE_MAX_LENGTH = 100.0  # max reduced px length of edge connecting contours
@@ -47,8 +47,8 @@ SPAN_MIN_WIDTH = 30      # minimum reduced px width for span
 SPAN_PX_PER_STEP = 20    # reduced px spacing for sampling along spans
 FOCAL_LENGTH = 1.2       # normalized focal length of camera
 
-DEBUG_LEVEL = 0          # 0=none, 1=some, 2=lots, 3=all
-DEBUG_OUTPUT = 'file'    # file, screen, both
+DEBUG_LEVEL = 2          # 0=none, 1=some, 2=lots, 3=all
+DEBUG_OUTPUT = 'screen'    # file, screen, both
 
 WINDOW_NAME = 'Dewarp'   # Window name for visualization
 
@@ -532,8 +532,8 @@ def assemble_spans(name, small, pagemask, cinfo_list):
             spans.append(cur_span)
 
     if DEBUG_LEVEL >= 2:
-        visualize_spans(name, small, pagemask, spans)
-
+        #visualize_spans(name, small, pagemask, spans)
+        print("spans ", name, small, pagemask, spans)
     return spans
 
 
@@ -671,6 +671,7 @@ def visualize_spans(name, small, pagemask, spans):
     display = small.copy()
     display[mask] = (display[mask]/2) + (regions[mask]/2)
     display[pagemask == 0] /= 4
+
 
     debug_show(name, 2, 'spans', display)
 
