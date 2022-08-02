@@ -108,6 +108,8 @@ def debug_show(name, step, text, display):
                     (255, 255, 255), 1, cv2.LINE_AA)
 
         cv2.imshow(WINDOW_NAME, image)
+        
+        cv2.setMouseCallback(WINDOW_NAME, MyCallBack)
 
         while cv2.waitKey(5) < 0:
             pass
@@ -839,6 +841,10 @@ def remap_image(name, img, small, page_dims, params):
 
     return threshfile
 
+def MyCallBack(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print("mouse position", x, y)
+
 
 def main():
 
@@ -850,6 +856,7 @@ def main():
         cv2.namedWindow(WINDOW_NAME)
 
     outfiles = []
+
 
     for imgfile in sys.argv[1:]:
 
