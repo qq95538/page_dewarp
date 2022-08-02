@@ -32,7 +32,7 @@ ADAPTIVE_WINSZ = 55      # window size for adaptive threshold in reduced px
 TEXT_MIN_WIDTH = 15      # min reduced px width of detected text contour
 TEXT_MIN_HEIGHT = 2      # min reduced px height of detected text contour
 TEXT_MIN_ASPECT = 1.5    # filter out text contours below this w/h ratio
-TEXT_MAX_THICKNESS = 15  # max reduced px thickness of detected text contour
+TEXT_MAX_THICKNESS = 20  # max reduced px thickness of detected text contour
 
 EDGE_MAX_OVERLAP = 1.0   # max reduced px horiz. overlap of contours in span
 EDGE_MAX_LENGTH = 100.0  # max reduced px length of edge connecting contours
@@ -47,7 +47,7 @@ SPAN_MIN_WIDTH = 30      # minimum reduced px width for span
 SPAN_PX_PER_STEP = 20    # reduced px spacing for sampling along spans
 FOCAL_LENGTH = 1.2       # normalized focal length of camera
 
-DEBUG_LEVEL = 2          # 0=none, 1=some, 2=lots, 3=all
+DEBUG_LEVEL = 3          # 0=none, 1=some, 2=lots, 3=all
 DEBUG_OUTPUT = 'screen'    # file, screen, both
 
 WINDOW_NAME = 'Dewarp'   # Window name for visualization
@@ -532,7 +532,7 @@ def assemble_spans(name, small, pagemask, cinfo_list):
             spans.append(cur_span)
 
     if DEBUG_LEVEL >= 2:
-        #visualize_spans(name, small, pagemask, spans)
+        visualize_spans(name, small, pagemask, spans)
         print("spans ", name, small, pagemask, spans)
     return spans
 
@@ -670,7 +670,7 @@ def visualize_spans(name, small, pagemask, spans):
 
     display = small.copy()
     display[mask] = (display[mask]/2) + (regions[mask]/2)
-    display[pagemask == 0] /= 4
+    display[pagemask == 0] = display[pagemask == 0] / 4
 
 
     debug_show(name, 2, 'spans', display)
@@ -823,8 +823,9 @@ def remap_image(name, img, small, page_dims, params):
     thresh = cv2.adaptiveThreshold(remapped, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
                                    cv2.THRESH_BINARY, ADAPTIVE_WINSZ, 25)
 
-    pil_image = Image.fromarray(thresh)
-    pil_image = pil_image.convert('1')
+    #pil_image = Image.fromarray(thresh)
+    #pil_image = pil_image.convert('1')
+    pil_image = Image.fromarray(remapped)
 
     threshfile = name + '_thresh.png'
     pil_image.save(threshfile, dpi=(OUTPUT_DPI, OUTPUT_DPI))
