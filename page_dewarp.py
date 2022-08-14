@@ -87,7 +87,7 @@ K = np.array([
     [0, 0, 1]], dtype=np.float32)
 
 
-def debug_show(name, step, text, display):
+def debug_show(name, step, text, display, debug_param = None):
 
     if DEBUG_OUTPUT != 'screen':
         filetext = text.replace(' ', '_')
@@ -109,7 +109,7 @@ def debug_show(name, step, text, display):
 
         cv2.imshow(WINDOW_NAME, image)
         
-        cv2.setMouseCallback(WINDOW_NAME, MyCallBack, (step, WINDOW_NAME, image))
+        cv2.setMouseCallback(WINDOW_NAME, MyCallBack, (step, WINDOW_NAME, image, debug_param))
 
         while cv2.waitKey(5) < 0:
             pass
@@ -535,7 +535,7 @@ def assemble_spans(name, small, pagemask, cinfo_list):
 
     if DEBUG_LEVEL >= 2:
         visualize_spans(name, small, pagemask, spans)
-        print("spans ", name, small, pagemask, spans)
+        
     return spans
 
 
@@ -675,7 +675,7 @@ def visualize_spans(name, small, pagemask, spans):
     display[pagemask == 0] = display[pagemask == 0] / 4
 
 
-    debug_show(name, 2, 'spans', display)
+    debug_show(name, 2, 'spans', display, debug_param = spans)
 
 
 def visualize_span_points(name, small, span_points, corners):
@@ -842,13 +842,20 @@ def remap_image(name, img, small, page_dims, params):
     return threshfile
 
 def MyCallBack(event, x, y, flags, param):
-    step, WINDOW_NAME, img = param
+    step, WINDOW_NAME, img, debug_param = param
     if step == 1 and event == cv2.EVENT_LBUTTONDOWN:  #get contour
-        print("mouse position", x, y)
+        print("step 1: visualize_contours, mouse position", x, y)
+        print(debug_param)
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
-    if step == 12 and event == cv2.EVENT_LBUTTONDOWN:#assemble span
-        print("mouse position", x, y)
+    if step == 2 and event == cv2.EVENT_LBUTTONDOWN:#assemble span
+        print("step 2: visualize_spans, mouse position", x, y)
+        #print(debug_param)
+        for each_span in debug_param: # on step2, the debug_param is spans
+            for each_contour_cinfo in each_span:
+                found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
+                if found == True:
+                    print("a contour in the span is selected")
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
 
