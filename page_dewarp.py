@@ -503,6 +503,7 @@ def assemble_spans(name, small, pagemask, cinfo_list):
 
     # generate list of spans as output
     spans = []
+    waste_spans = []
 
     # until we have removed everything from the list
     while cinfo_list:
@@ -532,9 +533,12 @@ def assemble_spans(name, small, pagemask, cinfo_list):
         # add if long enough
         if width > SPAN_MIN_WIDTH:
             spans.append(cur_span)
+        else:
+            waste_spans.append(cur_span)
 
     if DEBUG_LEVEL >= 2:
-        visualize_spans(name, small, pagemask, spans)
+        print("waste_spans in assemble_spans:", len(waste_spans))
+        visualize_spans(name, small, pagemask, (waste_spans, spans))
         
     return spans
 
@@ -659,10 +663,9 @@ def visualize_contours(name, small, cinfo_list):
     debug_show(name, 1, 'contours', display)
 
 
-def visualize_spans(name, small, pagemask, spans):
-
+def visualize_spans(name, small, pagemask, params):
+    waste_spans, spans = params
     regions = np.zeros_like(small)
-
     for i, span in enumerate(spans):
         contours = [cinfo.contour for cinfo in span]
         cv2.drawContours(regions, contours, -1,
@@ -675,7 +678,7 @@ def visualize_spans(name, small, pagemask, spans):
     display[pagemask == 0] = display[pagemask == 0] / 4
 
 
-    debug_show(name, 2, 'spans', display, debug_param = spans)
+    debug_show(name, 2, 'spans', display, debug_param = params)
 
 
 def visualize_span_points(name, small, span_points, corners):
@@ -849,13 +852,28 @@ def MyCallBack(event, x, y, flags, param):
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
     if step == 2 and event == cv2.EVENT_LBUTTONDOWN:#assemble span
-        print("step 2: visualize_spans, mouse position", x, y)
-        #print(debug_param)
-        for each_span in debug_param: # on step2, the debug_param is spans
-            for each_contour_cinfo in each_span:
-                found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
-                if found == True:
-                    print("a contour in the span is selected")
+        waste_spans, spans = debug_param
+        waste_cinfo_list = [x for i in waste_spans for x in i]
+        cinfo_list = [x for i in spans for x in i]
+        
+        found = False
+        picked_up = False
+        for each_contour_cinfo in cinfo_list:
+            found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
+            if found == True:
+                print("a contour in the span is selected", x, y)
+                break
+       
+        j = 0       
+        for each_waste_contour_cinfo in waste_cinfo_list:
+            j = j + 1
+            picked_up = cv2.pointPolygonTest(each_waste_contour_cinfo.contour,(x,y),False)
+            if picked_up == True:
+                print("a contour out of spans was picked up again in waste_spans:", x, y)
+                cv2.drawContours(img, [each_waste_contour_cinfo.contour], 0,
+                         CCOLORS[j % len(CCOLORS)], -1)
+                break
+
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
 
