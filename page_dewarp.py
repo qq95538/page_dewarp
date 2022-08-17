@@ -86,6 +86,9 @@ K = np.array([
     [0, FOCAL_LENGTH, 0],
     [0, 0, 1]], dtype=np.float32)
 
+span_selected = []
+waste_picked_up = []
+
 
 def debug_show(name, step, text, display, debug_param = None):
 
@@ -858,22 +861,36 @@ def MyCallBack(event, x, y, flags, param):
         
         found = False
         picked_up = False
-        for each_contour_cinfo in cinfo_list:
-            found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
-            if found == True:
-                print("a contour in the span is selected", x, y)
-                break
-       
-        j = 0       
+        
+        i = 0
+        i_found = 0
+        for span in spans:
+            i = i + 1
+            for each_contour_cinfo in span:  
+                found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
+                if found == True:
+                    print("a contour in the span is selected:", i, x, y)
+                    i_found = i
+                    break
+        if i_found > 0:
+            span_selected.append(spans[i_found])
+            print("span_selected is appended. Count:", len(span_selected))
+                
+        j = 0
+        j_found = 0       
         for each_waste_contour_cinfo in waste_cinfo_list:
             j = j + 1
             picked_up = cv2.pointPolygonTest(each_waste_contour_cinfo.contour,(x,y),False)
             if picked_up == True:
-                print("a contour out of spans was picked up again in waste_spans:", x, y)
+                print("a contour out of spans was picked up again in waste_spans:", j, x, y)
+                j_found = j
                 cv2.drawContours(img, [each_waste_contour_cinfo.contour], 0,
                          CCOLORS[j % len(CCOLORS)], -1)
                 break
-
+        if j_found > 0:
+            waste_picked_up.append(waste_cinfo_list[j_found])
+            print("waste_picked_up is appended. Count:", len(waste_picked_up))
+        
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
 
@@ -919,6 +936,9 @@ def main():
         if len(spans) < 1:
             print ('skipping', name, 'because only', len(spans), 'spans')
             continue
+
+        print("span_selected All Count:", len(span_selected))
+        print("waste_picked_up All Count::", len(waste_picked_up))
 
         span_points = sample_spans(small.shape, spans)
 
