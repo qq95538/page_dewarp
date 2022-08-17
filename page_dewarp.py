@@ -865,31 +865,28 @@ def MyCallBack(event, x, y, flags, param):
         i = 0
         i_found = 0
         for span in spans:
-            i = i + 1
             for each_contour_cinfo in span:  
                 found = cv2.pointPolygonTest(each_contour_cinfo.contour,(x,y),False)
                 if found == True:
                     print("a contour in the span is selected:", i, x, y)
                     i_found = i
                     break
+            i = i + 1
         if i_found > 0:
             span_selected.append(spans[i_found])
             print("span_selected is appended. Count:", len(span_selected))
                 
-        j = 0
-        j_found = 0       
+        j = 0   
         for each_waste_contour_cinfo in waste_cinfo_list:
-            j = j + 1
             picked_up = cv2.pointPolygonTest(each_waste_contour_cinfo.contour,(x,y),False)
             if picked_up == True:
                 print("a contour out of spans was picked up again in waste_spans:", j, x, y)
                 j_found = j
                 cv2.drawContours(img, [each_waste_contour_cinfo.contour], 0,
                          CCOLORS[j % len(CCOLORS)], -1)
+                waste_picked_up.append(each_waste_contour_cinfo)
+                print("waste_picked_up is appended. Count:", len(waste_picked_up))
                 break
-        if j_found > 0:
-            waste_picked_up.append(waste_cinfo_list[j_found])
-            print("waste_picked_up is appended. Count:", len(waste_picked_up))
         
         cv2.circle(img, (x, y), 10, (255,255,255), 1)
         cv2.imshow(WINDOW_NAME, img)
@@ -939,6 +936,27 @@ def main():
 
         print("span_selected All Count:", len(span_selected))
         print("waste_picked_up All Count::", len(waste_picked_up))
+        
+
+        print("spans count:", len(spans))
+        for span in span_selected:
+            spans.remove(span)
+        print("spans count:", len(spans))
+
+        new_span = []
+        if len(span_selected) == 2:
+            for cinfo in span_selected[0]:
+                new_span.append(cinfo)
+            print("new_span cinfo count:", len(new_span))
+            if len(waste_picked_up) == 1:
+                new_span.append(waste_picked_up[0])
+                print("new_span cinfo count added:", len(new_span))
+            for cinfo in span_selected[1]:
+                new_span.append(cinfo)
+            print("new_span cinfo count:", len(new_span))
+            spans.append(new_span)
+        print("spans count:", len(spans))
+
 
         span_points = sample_spans(small.shape, spans)
 
